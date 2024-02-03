@@ -37,19 +37,15 @@ class DecFec(models.Model):
         :return: Resultados da consulta.
         """
         try:
-            print("Teste")
+
             with connection.cursor() as cursor:
-                print("Teste2")
+
                 if params[0] is not None:
-                    print("Teste3")
                     cursor.execute(sql_query, params)
                 else:
-                    print("Teste4")
                     cursor.execute(sql_query)
 
-                print("Teste5")
                 results = cursor.fetchall()
-                print("Teste6")
             return results
         except Exception as e:
             # Handle exceptions or log the error
