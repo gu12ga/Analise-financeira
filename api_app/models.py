@@ -1,53 +1,78 @@
-from django.db import models, connection
+from django.db import models
+
+class Empresa(models.Model):
+    id_empresa = models.AutoField(primary_key=True)
+    sig_agente = models.CharField(max_length=255)
+    cnpj = models.CharField(max_length=20)
+
+    class Meta:
+        db_table = 'empresa'
+
+class Ano(models.Model):
+    id_ano = models.AutoField(primary_key=True)
+    ano = models.IntegerField()
+    periodo = models.IntegerField()
+
+    class Meta:
+        db_table = 'ano'
+
+class Consumidor(models.Model):
+    id_consumidoras = models.IntegerField(primary_key=True)
+    descricao = models.CharField(max_length=255)
+    class Meta:
+        db_table = 'consumidor'
 
 class DecFec(models.Model):
-    DatGeracaoConjuntoDados = models.DateField()
-    SigAgente = models.CharField(max_length=20)
-    NumCNPJ = models.CharField(max_length=14)
-    IdeConjUndConsumidoras = models.CharField(max_length=5)
-    DscConjUndConsumidoras = models.CharField(max_length=255)
-    SigIndicador = models.CharField(max_length=3)
-    AnoIndice = models.CharField(max_length=4)
-    NumPeriodoIndice = models.IntegerField()
-    VlrIndiceEnviado = models.DecimalField(max_digits=18, decimal_places=2)
-
+    id_dec_fec = models.AutoField(primary_key=True)
+    consumidoras = models.ForeignKey(Consumidor, on_delete=models.CASCADE)
+    sig_indicador = models.CharField(max_length=255)
+    ano = models.ForeignKey(Ano, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+    vlr_indice = models.DecimalField(max_digits=10, decimal_places=2)
     class Meta:
         db_table = 'dec_fec'
 
-    def __str__(self):
-        return (
-            f"DatGeracaoConjuntoDados: {self.DatGeracaoConjuntoDados}, "
-            f"SigAgente: {self.SigAgente}, "
-            f"NumCNPJ: {self.NumCNPJ}, "
-            f"IdeConjUndConsumidoras: {self.IdeConjUndConsumidoras}, "
-            f"DscConjUndConsumidoras: {self.DscConjUndConsumidoras}, "
-            f"SigIndicador: {self.SigIndicador}, "
-            f"AnoIndice: {self.AnoIndice}, "
-            f"NumPeriodoIndice: {self.NumPeriodoIndice}, "
-            f"VlrIndiceEnviado: {self.VlrIndiceEnviado}"
-        )
-    
-    @classmethod
-    def consulta_sql(cls, sql_query, params=None):
-        """
-        Executa uma consulta SQL e retorna os resultados.
+class AnoConsumidor(models.Model):
+    id = models.AutoField(primary_key=True)
+    ano = models.ForeignKey(Ano, on_delete=models.CASCADE)
+    consumidoras = models.ForeignKey(Consumidor, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'ano_consumidor'
 
-        :param sql_query: String contendo a consulta SQL.
-        :param params: Parâmetros seguros para a consulta (opcional).
-        :return: Resultados da consulta.
-        """
-        try:
+class DadosAcoes(models.Model):
+    id = models.AutoField(primary_key=True)
+    Date = models.DateField()
+    Open = models.DecimalField(max_digits=18, decimal_places=15)
+    High = models.DecimalField(max_digits=18, decimal_places=15)
+    Low = models.DecimalField(max_digits=18, decimal_places=15)
+    Close = models.DecimalField(max_digits=18, decimal_places=15)
+    Adj_Close = models.DecimalField(max_digits=18, decimal_places=15)
+    Volume = models.IntegerField()
+    class Meta:
+        db_table = 'dados_acoes'
+        
+class DadosAcoesEmpresa(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+    dados_acoes = models.ForeignKey(DadosAcoes, on_delete=models.CASCADE)
 
-            with connection.cursor() as cursor:
+    class Meta:
+        db_table = 'dados_acoes_empresa'
+        unique_together = ('empresa', 'dados_acoes')
 
-                if params[0] is not None:
-                    cursor.execute(sql_query, params)
-                else:
-                    cursor.execute(sql_query)
+class DadosAcoesInclinacao(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
+    ano = models.ForeignKey(Ano, on_delete=models.CASCADE)
+    inclinacao = models.DecimalField(max_digits=20, decimal_places=17)
 
-                results = cursor.fetchall()
-            return results
-        except Exception as e:
-            # Handle exceptions or log the error
-            print(f"Error executing SQL query: {e}")
-            return None
+    class Meta:
+        db_table = 'dados_acoes_inclinacao'
+        unique_together = ('empresa', 'ano')
+
+class Correlacao(models.Model):
+    id_correlacao = models.AutoField(primary_key=True)
+    dec_fec = models.ForeignKey(DecFec, on_delete=models.CASCADE)
+    kendall = models.DecimalField(max_digits=11, decimal_places=10)
+    spearman = models.DecimalField(max_digits=11, decimal_places=10)
+    class Meta:
+        db_table = 'correlacao'

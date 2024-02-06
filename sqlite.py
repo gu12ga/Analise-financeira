@@ -9,16 +9,16 @@ class Sqlite:
         self.columns = []
         
         # Conectar ao banco de dados (isso cria o arquivo se não existir)
-        self.conn = sqlite3.connect('dados.db')
+        self.conn = sqlite3.connect('/home/gustavo/Documentos/date.db')
 
         # Criar um cursor para executar comandos SQL
         self.cursor = self.conn.cursor()
         
-        self.lerPrimeiroElemento()
         #self.criarTabela()
-        #self.lerCSV()
+        self.lerCSV()
         #self.connectAndcursor()
         #self.adicionarLinhas()
+        #self.lerPrimeiroElemento()
     
 
     def criarTabela(self):
@@ -83,9 +83,12 @@ class Sqlite:
         #print('Errors:', len(self.errors))
         #print('Rows:', len(self.rows))
 
-        for error in errors:
+        '''for error in errors:
             row = ''.join(chr(i) for i in error[:-2])
             self.clean_errors.append(row.split(';'))
+        '''
+        for i in range(0,9):
+            print(self.rows[i])
 
 
     def adicionarLinhas(self):
